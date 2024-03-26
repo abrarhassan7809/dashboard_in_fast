@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 from database_config import db_schemas
 from jose import JWTError, jwt
@@ -16,6 +17,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    print(encoded_jwt)
 
     return encoded_jwt
 
@@ -31,3 +33,9 @@ def verify_token(token: str, credentials_exception):
         return token_data
     except JWTError:
         raise credentials_exception
+
+
+def create_token():
+    token = str(uuid.uuid1())
+
+    return token

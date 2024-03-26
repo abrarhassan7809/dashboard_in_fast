@@ -1,17 +1,3 @@
-// =========================================================
-// Material Dashboard 2 - v3.1.0
-// =========================================================
-
-// Product Page: https://www.creative-tim.com/product/material-dashboard
-// Copyright 2023 Creative Tim (https://www.creative-tim.com)
-// Licensed under MIT (https://github.com/creativetimofficial/material-dashboard/blob/master/LICENSE.md)
-
-// Coded by www.creative-tim.com
-
-// =========================================================
-
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
 "use strict";
 (function() {
   var isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
@@ -356,11 +342,6 @@ function navbarBlurOnScroll(id) {
   }
 }
 
-// Debounce Function
-// Returns a function, that, as long as it continues to be invoked, will not
-// be triggered. The function will be called after it stops being called for
-// N milliseconds. If `immediate` is passed, trigger the function on the
-// leading edge, instead of the trailing.
 function debounce(func, wait, immediate) {
   var timeout;
   return function() {

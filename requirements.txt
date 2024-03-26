@@ -7,3 +7,5 @@ python-jose
 python-jose[cryptography]
 validate_email
 python-multipart
+starlette
+Jinja2
