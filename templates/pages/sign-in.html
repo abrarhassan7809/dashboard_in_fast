@@ -20,6 +20,12 @@
   </head>
 
 <body class="bg-gray-200">
+  {% if success %}
+    <div style="color: white;" class="col-md-12 alert alert-success alert-dismissible mx-auto" role="alert">
+      {{ success }}
+      <span style="float: right; cursor: pointer; font-size: 20px;" aria-hidden="true" onclick="this.parentElement.style.display='none';">&times;</span>
+    </div>
+  {% endif %}
   <div class="container position-sticky z-index-sticky top-0">
     <div class="row">
       <div class="col-12">
@@ -101,6 +107,7 @@
                 </div>
               </div>
               <div class="card-body">
+
                 <form role="form" method="post" action="/" class="text-start">
                   <div class="input-group input-group-outline my-3">
                     <input type="email" name="email" placeholder="Email" class="form-control">
@@ -120,6 +127,7 @@
                     <a href="/register/" class="text-primary text-gradient font-weight-bold">Sign up</a>
                   </p>
                 </form>
+
               </div>
             </div>
           </div>
@@ -161,6 +169,24 @@
   <script src="../static/js/core/bootstrap.min.js"></script>
   <script src="../static/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../static/js/plugins/smooth-scrollbar.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var errorAlerts = document.querySelectorAll(".alert-danger");
+      var successAlerts = document.querySelectorAll(".alert-success");
+
+      errorAlerts.forEach(function (errorAlert) {
+          setTimeout(function () {
+              errorAlert.style.display = "none";
+          }, 2000);
+      });
+
+      successAlerts.forEach(function (successAlert) {
+          setTimeout(function () {
+              successAlert.style.display = "none";
+          }, 2000);
+      });
+    });
+  </script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {

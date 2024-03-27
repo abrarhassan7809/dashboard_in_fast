@@ -9,3 +9,4 @@ validate_email
 python-multipart
 starlette
 Jinja2
+alembic
