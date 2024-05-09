@@ -44,7 +44,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white " href="./tables.html">
+          <a class="nav-link text-white " href="/get_all_user/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">table_view</i>
               </div>
@@ -53,7 +53,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white " href="./billing.html">
+          <a class="nav-link text-white " href="">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">receipt_long</i>
               </div>
@@ -62,7 +62,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white " href="./notifications.html">
+          <a class="nav-link text-white " href="">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">notifications</i>
               </div>
@@ -84,22 +84,22 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white " href="/login/">
+          <a class="nav-link text-white " href="/add_user/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">login</i>
               </div>
-            <span class="nav-link-text ms-1">Sign In</span>
+            <span class="nav-link-text ms-1">Add User</span>
           </a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link text-white " href="/register/">
-              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                <i class="material-icons opacity-10">assignment</i>
-              </div>
-            <span class="nav-link-text ms-1">Sign Up</span>
-          </a>
-        </li>
+<!--        <li class="nav-item">-->
+<!--          <a class="nav-link text-white " href="/add_user/">-->
+<!--              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">-->
+<!--                <i class="material-icons opacity-10">assignment</i>-->
+<!--              </div>-->
+<!--            <span class="nav-link-text ms-1">Add User</span>-->
+<!--          </a>-->
+<!--        </li>-->
       </ul>
     </div>
   </aside>
@@ -277,8 +277,11 @@
                         {% endif %}
                       </td>
                       <td class="align-middle text-center text-sm">
-                        <span class="badge badge-sm bg-gradient-success">Online</span>
-                        <!--  <span class ="badge badge-sm bg-gradient-secondary" > Offline </span>-->
+                        {% if data.user_status %}
+                          <span class="badge badge-sm bg-gradient-success">Online</span>
+                        {% else %}
+                          <span class ="badge badge-sm bg-gradient-secondary" > Offline </span>
+                        {% endif %}
                       </td>
                       <td class="align-middle text-center">
                         <span class="text-secondary text-xs font-weight-bold">{{data.created_at}}</span>

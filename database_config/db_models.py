@@ -15,7 +15,7 @@ class User(Base):
 
     created_at = Column(TIMESTAMP, nullable=False)
     is_admin = Column(Boolean, default=False)
-    # user_status = Column(Boolean, default=False)
+    user_status = Column(Boolean, default=False)
 
 
 # ======== Products ========
