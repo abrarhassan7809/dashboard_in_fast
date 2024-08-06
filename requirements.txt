@@ -6,6 +6,8 @@ pydantic
 python-jose
 python-jose[cryptography]
 validate_email
+validate-email
+email-validator
 python-multipart
 starlette
 Jinja2

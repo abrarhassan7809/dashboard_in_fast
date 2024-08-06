@@ -1,6 +1,6 @@
 import datetime
 import uvicorn
-from fastapi import FastAPI, Request, status, HTTPException, Form, Depends
+from fastapi import FastAPI, Request, status, Form, Depends
 from authentication.oauth_token import create_token
 from authentication.password_hashing import Hash
 from database_config import db_models, db_creation
@@ -21,14 +21,22 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # =========register and login===========
 @app.get("/logout/")
-async def logout(request: Request):
-    response = RedirectResponse(url=app.url_path_for("login_api"))
-    response.delete_cookie('token')
-    request.cookies.pop('token')
-    # response.delete_cookie("remember_me")
-    # request.cookies.pop('remember_me')
-    # response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-    return response
+async def logout(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        is_user = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if is_user:
+            is_user.user_token = None
+            is_user.user_status = False
+            db.commit()
+
+        response = RedirectResponse(url=app.url_path_for("login_api"), status_code=status.HTTP_303_SEE_OTHER)
+        response.delete_cookie('token')
+        request.cookies.pop('token')
+        return response
+
+    else:
+        return RedirectResponse(url=app.url_path_for("login_api"), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get('/register/')
@@ -50,39 +58,48 @@ async def register_api(request: Request, first_name: str = Form(...), last_name:
         return RedirectResponse(url=app.url_path_for("dashboard_api"))
 
     if email_checker(email):
-        if password_checker(password):
-            user = db.query(db_models.User).filter(db_models.User.email == email).first()
-            if user:
-                message = 'User already exist'
+        user = db.query(db_models.User).filter(email == db_models.User.email).first()
+        if user:
+            message = 'User already exist'
+            return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
+        else:
+            if password != confirm_password:
+                message = 'Password is not matched'
                 return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
             else:
-                if password != confirm_password:
-                    message = 'Password is not matched'
-                    return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
-                else:
-                    message = 'User Created Successfully'
-                    current_time = datetime.datetime.now()
-                    new_user = db_models.User(first_name=first_name, last_name=last_name, email=email,
-                                              password=Hash.bcrypt(password),
-                                              confirm_password=Hash.bcrypt(password), user_token=None,
-                                              created_at=current_time, is_admin=False, user_status=False)
+                message = 'User Created Successfully'
+                current_time = datetime.datetime.now()
+                new_user = db_models.User(first_name=first_name, last_name=last_name, email=email,
+                                          password=Hash.bcrypt(password),
+                                          confirm_password=Hash.bcrypt(password),
+                                          created_at=current_time, is_admin=False, user_status=False)
 
-                    db.add(new_user)
-                    db.commit()
-                    db.refresh(new_user)
+                db.add(new_user)
+                db.commit()
+                db.refresh(new_user)
 
-                    return templates.TemplateResponse("pages/sign-in.html", {"request": request, "success": message})
+                return templates.TemplateResponse("pages/sign-in.html", {"request": request, "success": message})
 
     return RedirectResponse(url=app.url_path_for('register_api'))
 
 
 @app.get('/', status_code=status.HTTP_200_OK)
-async def login_api(request: Request):
+async def login_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
-    if is_token:
-        return RedirectResponse(url=app.url_path_for("dashboard_api"))
+    if not is_token:
+        is_admin = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if not is_admin:
+            current_time = datetime.datetime.now()
+            new_admin = db_models.User(first_name="Admin", last_name="Admin", email="admin123@gmail.com",
+                                       password=Hash.bcrypt("admin123"), confirm_password=Hash.bcrypt("admin123"),
+                                       user_token="", created_at=current_time, is_admin=True, user_status=False)
+            db.add(new_admin)
+            db.commit()
+            db.refresh(new_admin)
 
-    return templates.TemplateResponse("pages/sign-in.html", {"request": request})
+        return templates.TemplateResponse("pages/sign-in.html", {"request": request})
+
+    return RedirectResponse(url=app.url_path_for("dashboard_api"), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.post('/', status_code=status.HTTP_200_OK)
@@ -92,7 +109,7 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
     if is_token:
         return RedirectResponse(url=app.url_path_for("dashboard_api"))
 
-    user = db.query(db_models.User).filter(db_models.User.email == email).first()
+    user = db.query(db_models.User).filter(email == db_models.User.email).first()
     if user:
         if email_checker(email):
             if Hash.verify(password, user.password):
@@ -101,19 +118,49 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
                     user.user_status = True
                     db.commit()
 
-                    updated_token = db.query(db_models.User).filter(db_models.User.email == email).first()
+                    updated_token = db.query(db_models.User).filter(email == db_models.User.email).first()
                     response = RedirectResponse(url=app.url_path_for("dashboard_api"))
                     response.set_cookie(key="token", value=updated_token.user_token)
-
-                    # if remember_me:
-                    #     response.set_cookie(key="remember_me", value="true")
 
                     return response
 
     return templates.TemplateResponse("pages/sign-in.html", {"request": request})
 
 
+# ========dashboard data=========
+@app.get('/dashboard/', status_code=status.HTTP_200_OK)
+async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if user_exist:
+            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post('/dashboard/', status_code=status.HTTP_200_OK)
+async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if user_exist:
+            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist})
+
+    return RedirectResponse(url=app.url_path_for('login_api'))
+
+
 # ========user data=========
+@app.get('/get_all_user/', status_code=status.HTTP_200_OK)
+async def get_all_user(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).all()
+        return templates.TemplateResponse("pages/tables.html", {"request": request, 'user_data': user_exist})
+
+    return RedirectResponse(url=app.url_path_for('login_api'))
+
+
 @app.get('/add_user/')
 async def add_user(request: Request):
     is_token = request.cookies.get('token')
@@ -126,56 +173,43 @@ async def add_user(request: Request):
 
 @app.post('/add_user/')
 async def add_user(request: Request, first_name: str = Form(...), last_name: str = Form(...),
-                       email: str = Form(...), password: str = Form(...), confirm_password: str = Form(...),
-                       db: Session = Depends(db_creation.get_db)):
+                   email: str = Form(...), password: str = Form(...), confirm_password: str = Form(...),
+                   db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
-    if is_token:
+    if not is_token:
         return RedirectResponse(url=app.url_path_for("dashboard_api"))
 
     if email_checker(email):
-        if password_checker(password):
-            user = db.query(db_models.User).filter(db_models.User.email == email).first()
-            if user:
-                message = 'User already exist'
+        user = db.query(db_models.User).filter(email == db_models.User.email).first()
+        if user:
+            message = 'User already exist'
+            return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
+        else:
+            if password != confirm_password:
+                message = 'Password is not matched'
                 return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
             else:
-                if password != confirm_password:
-                    message = 'Password is not matched'
-                    return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
-                else:
-                    message = 'User Created Successfully'
-                    current_time = datetime.datetime.now()
-                    new_user = db_models.User(first_name=first_name, last_name=last_name, email=email,
-                                              password=Hash.bcrypt(password),
-                                              confirm_password=Hash.bcrypt(password), user_token="",
-                                              created_at=current_time, is_admin=False, user_status=False)
+                message = 'User Created Successfully'
+                current_time = datetime.datetime.now()
+                new_user = db_models.User(first_name=first_name, last_name=last_name, email=email,
+                                          password=Hash.bcrypt(password),
+                                          confirm_password=Hash.bcrypt(password), user_token="",
+                                          created_at=current_time, is_admin=False, user_status=False)
 
-                    db.add(new_user)
-                    db.commit()
-                    db.refresh(new_user)
+                db.add(new_user)
+                db.commit()
+                db.refresh(new_user)
 
-                    return templates.TemplateResponse("pages/sign-in.html", {"request": request, "success": message})
+                return templates.TemplateResponse("pages/add-user.html", {"request": request, "success": message})
 
     return RedirectResponse(url=app.url_path_for('register_api'))
-
-
-@app.get('/get_all_user/', status_code=status.HTTP_200_OK)
-async def get_all_user(request: Request, db: Session = Depends(db_creation.get_db)):
-    is_token = request.cookies.get('token')
-    if is_token:
-        user_exist = db.query(db_models.User).all()
-        for data in user_exist:
-            print(data.email)
-        return templates.TemplateResponse("pages/tables.html", {"request": request, 'user_data': user_exist})
-
-    return RedirectResponse(url=app.url_path_for('login_api'))
 
 
 @app.get('/update_user/', status_code=status.HTTP_200_OK)
 async def update_user(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
 
         if user_exist:
             return templates.TemplateResponse("pages/profile.html", {"request": request, "user_data": user_exist})
@@ -189,7 +223,7 @@ async def update_user(request: Request, first_name: str = Form(None), last_name:
                       db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
 
         if user_exist:
             if password != confirm_password:
@@ -219,35 +253,12 @@ async def update_user(request: Request, first_name: str = Form(None), last_name:
 async def delete_user(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
 
         if user_exist:
             user_exist.delete(synchronize_session=False)
             db.commit()
             return RedirectResponse(url=app.url_path_for('login_api'))
-
-    return RedirectResponse(url=app.url_path_for('login_api'))
-
-
-# ========dashboard data=========
-@app.get('/dashboard/', status_code=status.HTTP_200_OK)
-async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
-    is_token = request.cookies.get('token')
-    if is_token:
-        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
-        if user_exist:
-            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist})
-
-    return RedirectResponse(url=app.url_path_for('login_api'))
-
-
-@app.post('/dashboard/', status_code=status.HTTP_200_OK)
-async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
-    is_token = request.cookies.get('token')
-    if is_token:
-        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
-        if user_exist:
-            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 

@@ -10,11 +10,11 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
 
-    <link id="pagestyle" href="../static/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
-    <link rel="apple-touch-icon" sizes="76x76" href="../static/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../static/img/favicon.png">
-    <link href="../static/css/nucleo-icons.css" rel="stylesheet" />
-    <link href="../static/css/nucleo-svg.css" rel="stylesheet" />
+    <link id="pagestyle" href="/static/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/img/apple-icon.png">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link href="/static/css/nucleo-icons.css" rel="stylesheet" />
+    <link href="/static/css/nucleo-svg.css" rel="stylesheet" />
     <title>Fast Dashboard</title>
 
   </head>
@@ -23,6 +23,12 @@
   {% if error %}
     <div style="color: white;" class="col-md-10 alert alert-danger alert-dismissible mx-auto" role="alert">
       {{ error }}
+      <span style="float: right; cursor: pointer; font-size: 20px;" aria-hidden="true" onclick="this.parentElement.style.display='none';">&times;</span>
+    </div>
+  {% endif %}
+  {% if success %}
+    <div style="color: white;" class="col-md-12 alert alert-success alert-dismissible mx-auto" role="alert">
+      {{ success }}
       <span style="float: right; cursor: pointer; font-size: 20px;" aria-hidden="true" onclick="this.parentElement.style.display='none';">&times;</span>
     </div>
   {% endif %}
@@ -50,8 +56,7 @@
                 </li>
                 <li class="nav-item">
                   <a class="nav-link me-2" href="/dashboard/">
-                    <i class="fas fa-key opacity-6 text-dark me-1"></i>
-                    Go Back
+                    <i class="fas fa-key opacity-6 text-dark me-1"></i>Go Back
                   </a>
                 </li>
               </ul>
@@ -75,7 +80,7 @@
                 </div>
                 <div class="card-body" style="margin-top: -30px;">
 
-                  <form role="form" method="post" action="/register/">
+                  <form role="form" method="post" action="/add_user/">
                     <div class="input-group input-group-outline mb-3">
                       <input type="text" name="first_name" placeholder="First Name" class="form-control">
                     </div>
@@ -112,10 +117,10 @@
   </main>
 
   <!--   Core JS Files   -->
-  <script src="../static/js/core/popper.min.js"></script>
-  <script src="../static/js/core/bootstrap.min.js"></script>
-  <script src="../static/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../static/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="/static/js/core/popper.min.js"></script>
+  <script src="/static/js/core/bootstrap.min.js"></script>
+  <script src="/static/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="/static/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var errorAlerts = document.querySelectorAll(".alert-danger");

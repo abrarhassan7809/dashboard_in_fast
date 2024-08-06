@@ -11,7 +11,7 @@ class User(Base):
     email = Column(String, unique=False, nullable=False)
     password = Column(String, unique=False, nullable=False)
     confirm_password = Column(String, unique=False, nullable=False)
-    user_token = Column(String, unique=True, nullable=False)
+    user_token = Column(String, nullable=True)
 
     created_at = Column(TIMESTAMP, nullable=False)
     is_admin = Column(Boolean, default=False)
