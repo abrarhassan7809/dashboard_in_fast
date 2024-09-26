@@ -263,5 +263,28 @@ async def delete_user(request: Request, db: Session = Depends(db_creation.get_db
     return RedirectResponse(url=app.url_path_for('login_api'))
 
 
+# ========billing data=========
+@app.get('/billing/', status_code=status.HTTP_200_OK)
+async def billing_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if user_exist:
+            return templates.TemplateResponse("pages/billing.html", {"request": request, "user_data": user_exist})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post('/billing/', status_code=status.HTTP_200_OK)
+async def billing_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if user_exist:
+            return templates.TemplateResponse("pages/billing.html", {"request": request, "user_data": user_exist})
+
+    return RedirectResponse(url=app.url_path_for('login_api'))
+
+
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True)
