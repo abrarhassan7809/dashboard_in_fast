@@ -123,8 +123,8 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
                     response.set_cookie(key="token", value=updated_token.user_token)
 
                     return response
-
-    return templates.TemplateResponse("pages/sign-in.html", {"request": request})
+    error = "User not exits!"
+    return templates.TemplateResponse("pages/sign-in.html", {"request": request, "error": error})
 
 
 # ========dashboard data=========
@@ -282,6 +282,29 @@ async def billing_api(request: Request, db: Session = Depends(db_creation.get_db
         user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
         if user_exist:
             return templates.TemplateResponse("pages/billing.html", {"request": request, "user_data": user_exist})
+
+    return RedirectResponse(url=app.url_path_for('login_api'))
+
+
+# ========notification data=========
+@app.get('/notification/', status_code=status.HTTP_200_OK)
+async def notification_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if user_exist:
+            return templates.TemplateResponse("pages/notifications.html", {"request": request, "user_data": user_exist})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post('/notification/', status_code=status.HTTP_200_OK)
+async def notification_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        if user_exist:
+            return templates.TemplateResponse("pages/notifications.html", {"request": request, "user_data": user_exist})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 

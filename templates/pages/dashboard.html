@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 
-  <head>
+<head>
     <meta charset="utf-8" />
+    <title>Fast Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
-    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
-
-    <link id="pagestyle" href="/static/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
     <link rel="apple-touch-icon" sizes="76x76" href="/static/img/apple-icon.png">
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
     <link href="/static/css/nucleo-icons.css" rel="stylesheet" />
     <link href="/static/css/nucleo-svg.css" rel="stylesheet" />
-    <title>Fast Dashboard</title>
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link id="pagestyle" href="/static/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
+    <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
 
     <style>
       .icon-shape {
@@ -31,8 +30,7 @@
           position: relative;
       }
     </style>
-
-  </head>
+</head>
 
 <body class="g-sidenav-show  bg-gray-100">
   <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3   bg-gradient-dark" id="sidenav-main">
@@ -48,11 +46,20 @@
 
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link text-white " href="/dashboard/">
+          <a class="nav-link text-white active" href="/dashboard/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">dashboard</i>
               </div>
             <span class="nav-link-text ms-1">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link text-white " href="/category/">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="material-icons opacity-10">category</i>
+              </div>
+            <span class="nav-link-text ms-1">Category</span>
           </a>
         </li>
 
@@ -75,7 +82,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white " href="">
+          <a class="nav-link text-white " href="/notification/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">notifications</i>
               </div>
@@ -156,7 +163,7 @@
                   <a class="dropdown-item border-radius-md" href="javascript:;">
                     <div class="d-flex py-1">
                       <div class="my-auto">
-                        <img src="/static/img/team-2.jpg" class="avatar avatar-sm  me-3 ">
+                        <img src="/static/img/team-2.jpg" class="avatar avatar-sm  me-3 " alt="">
                       </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="text-sm font-weight-normal mb-1"><span class="font-weight-bold">New message</span> from Asim</h6>
@@ -658,6 +665,24 @@
   <script src="/static/js/plugins/smooth-scrollbar.min.js"></script>
   <script src="/static/js/plugins/chartjs.min.js"></script>
   <script>
+      function sidebarColor(element) {
+          var color = element.getAttribute("data-color");
+          var sidebar = document.querySelector(".sidenav");
+          if (sidebar) {
+            sidebar.classList.remove("bg-gradient-primary", "bg-gradient-dark", "bg-gradient-info", "bg-gradient-success", "bg-gradient-warning", "bg-gradient-danger");
+
+            sidebar.classList.add("bg-gradient-" + color);
+
+            var badges = document.querySelectorAll(".badge.filter");
+            badges.forEach(function(badge) {
+              badge.classList.remove("active");
+            });
+            element.classList.add("active");
+          }
+        }
+
+  </script>
+  <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
       var options = {
@@ -666,7 +691,7 @@
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
   </script>
-  <!-- Github buttons -->
+
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <script src="/static/js/material-dashboard.min.js?v=3.1.0"></script>
 
