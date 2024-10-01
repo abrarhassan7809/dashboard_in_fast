@@ -48,7 +48,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white " href="/add_product/">
+          <a class="nav-link text-white active" href="/add_product/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">category</i>
               </div>
@@ -88,7 +88,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white active" href="/update_user/">
+          <a class="nav-link text-white" href="/update_user/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">person</i>
               </div>
@@ -248,52 +248,58 @@
 
     <!-- End Navbar -->
     <div class="container-fluid px-2 px-md-4">
-      <div class="page-header min-height-300 border-radius-xl mt-4" style="background-image: url('https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');">
-        <span class="mask  bg-gradient-primary  opacity-6"></span>
-      </div>
-      <div class="card card-body mx-3 mx-md-4 mt-n6">
+      <div class="card card-body mx-3 mx-md-4">
         {% if success %}
           <div style="color: white;" class="col-md-12 alert alert-success alert-dismissible mx-auto" role="alert">
             {{ success }}
             <span style="float: right; cursor: pointer; font-size: 20px;" aria-hidden="true" onclick="this.parentElement.style.display='none';">&times;</span>
           </div>
         {% endif %}
-        <div class="row gx-4 mb-2">
-          {% if user_data %}
-          <div class="col-auto my-auto">
-            <div class="h-100">
-              <img src="/static/img/bruce-mars.jpg" alt="profile_image" class="w-50 border-radius-lg shadow-sm">
-              <h5 class="mb-1 mt-3">Welcome</h5>
-              <p class="mb-0 font-weight-normal text-sm">{{user_data.first_name}} {{user_data.last_name}}</p>
+        <form action="/add_product/" method="post" enctype="multipart/form-data">
+            <div class="row gx-4 mb-2">
+                <div class="col-lg-4 col-md-5 col-sm-12 my-auto">
+                    <div id="image-preview-group" class="row flex-column"></div>
+                    <div class="mt-4">
+                        <small class="text-muted" id="small_text">You can upload up to 3 images.</small>
+                        <input type="file" name="images" id="image_name" accept="image/*" multiple onchange="validateAndPreviewImages(this)" class="form-control">
+                    </div>
+                </div>
+                <div class="col-lg-5 col-md-5 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
+                    <div class="nav-wrapper position-relative end-0">
+                        <h4 class="mt-2" style="color: #e91e63;">Add Product</h4>
+                        <div class="input-group input-group-outline mb-3">
+                            <input type="text" name="product_code" placeholder="Product Code" class="form-control">
+                        </div>
+                        <div class="input-group input-group-outline mb-3">
+                            <input type="text" name="product_name" placeholder="Product Name" class="form-control">
+                        </div>
+                        <div class="input-group input-group-outline mb-3">
+                            <select style="width: 100%" class="form-control" name="select_category">
+                                <option disabled selected>Select Category</option>
+                                {% for category in category_data %}
+                                <option value="{{ category.id }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="input-group input-group-outline mb-3">
+                            <input type="number" name="quantity" min="1" placeholder="Quantity" class="form-control">
+                        </div>
+                        <div class="input-group input-group-outline mb-3">
+                            <input type="number" name="sale_price" placeholder="Sale Price" class="form-control">
+                        </div>
+                        <div class="input-group input-group-outline mb-3">
+                            <input type="number" name="purchase_price" placeholder="Purchase Price" class="form-control">
+                        </div>
+                        <div class="input-group input-group-outline mb-3">
+                            <textarea name="description" placeholder="Product Description" class="form-control"></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0">Add</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="col-lg-5 col-md-5 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
-            <div class="nav-wrapper position-relative end-0">
-              <form role="form" method="post" action="/update_user/">
-                <h4 class="mt-2" style="color: #e91e63;">Update Profile</h4>
-                <div class="input-group input-group-outline mb-3">
-                  <input type="text" name="first_name" placeholder="First Name" value="{{user_data.first_name}}" class="form-control">
-                </div>
-                <div class="input-group input-group-outline mb-3">
-                  <input type="text" name="last_name" placeholder="Last Name" value="{{user_data.last_name}}" class="form-control">
-                </div>
-                <div class="input-group input-group-outline mb-3">
-                  <input type="email" name="email" placeholder="Email" value="{{user_data.email}}" class="form-control">
-                </div>
-                <div class="input-group input-group-outline mb-3">
-                  <input type="password" name="password" placeholder="New Password" class="form-control">
-                </div>
-                <div class="input-group input-group-outline mb-3">
-                  <input type="password" name="confirm_password" placeholder="Confirm Password" class="form-control">
-                </div>
-                <div class="text-center">
-                  <button type="submit" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0">Sign Up</button>
-                </div>
-              </form>
-            </div>
-          </div>
-          {% endif %}
-        </div>
+        </form>
       </div>
     </div>
 
@@ -304,25 +310,26 @@
             <div class="col-lg-6 mb-lg-0 mb-4">
               <div class="copyright text-center text-sm text-muted text-lg-start">
                 © <script>document.write(new Date().getFullYear())</script>, Create by
-                <a href="/dashboard/" class="font-weight-bold">CodeBase</a> for a better web.
+                <a href="https://www.creative-tim.com" class="font-weight-bold" target="_blank">CodeBase</a> for a better web.
               </div>
             </div>
             <div class="col-lg-6">
               <ul class="nav nav-footer justify-content-center justify-content-lg-end">
                 <li class="nav-item">
-                  <a href="/dashboard/" class="nav-link text-muted">CodeBase</a>
+                  <a href="https://www.creative-tim.com" class="nav-link text-muted" target="_blank">CodeBase</a>
                 </li>
                 <li class="nav-item">
-                  <a href="/dashboard/" class="nav-link text-muted">About Us</a>
+                  <a href="https://www.creative-tim.com/presentation" class="nav-link text-muted" target="_blank">About Us</a>
                 </li>
                 <li class="nav-item">
-                  <a href="/dashboard/" class="nav-link pe-0 text-muted">License</a>
+                  <a href="https://www.creative-tim.com/license" class="nav-link pe-0 text-muted" target="_blank">License</a>
                 </li>
               </ul>
             </div>
           </div>
         </div>
       </footer>
+
   </div>
 
   <div class="fixed-plugin">
@@ -424,6 +431,46 @@
           }, 2000);
       });
     });
+  </script>
+  <script>
+    let totalUploadedImages = 0;
+    function validateAndPreviewImages(input) {
+        const maxFiles = 3;
+        const files = input.files;
+        const previewContainer = document.getElementById('image-preview-group');
+        const smallText = document.getElementById('small_text');
+
+        if (totalUploadedImages + files.length > maxFiles) {
+            alert('You can only upload a maximum of 3 images in total.');
+            input.value = '';
+            return;
+        }
+
+        Array.from(files).forEach((file) => {
+            if (file.type.startsWith('image/') && totalUploadedImages < maxFiles) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgCol = document.createElement('div');
+                    imgCol.classList.add('mb-3');
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '150px'; // Increase image width
+                    img.style.height = '120px'; // Increase image height
+                    img.style.objectFit = 'cover'; // Ensure image fills the box
+                    img.classList.add('border-radius-lg', 'shadow-sm'); // Add styling
+
+                    imgCol.appendChild(img);
+                    previewContainer.appendChild(imgCol);
+                }
+                reader.readAsDataURL(file);
+                totalUploadedImages++;
+            }
+        });
+        if (totalUploadedImages > 0) {
+            smallText.style.display = 'none';
+        }
+        input.value = '';
+    }
   </script>
   <script>
       function sidebarColor(element) {

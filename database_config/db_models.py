@@ -19,16 +19,30 @@ class User(Base):
 
 
 # ======== Products ========
+class Category(Base):
+    __tablename__ = 'categories'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    category_name = Column(String, unique=False, nullable=False)
+
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+
+
 class Products(Base):
     __tablename__ = 'products'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     product_code = Column(String, unique=False, nullable=False)
     product_name = Column(String, unique=False, nullable=False)
+    product_description = Column(String, unique=False, nullable=True)
+    product_image1 = Column(String, unique=False, nullable=True)
+    product_image2 = Column(String, unique=False, nullable=True)
+    product_image3 = Column(String, unique=False, nullable=True)
     product_quantity = Column(Integer, nullable=False)
-    purchase_price = Column(Float, nullable=False)
+    purchase_price = Column(Float, nullable=True)
     sale_price = Column(Float, nullable=False)
 
+    category_id = Column(Integer, ForeignKey('categories.id', ondelete='CASCADE'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
 

@@ -1,6 +1,8 @@
 import datetime
+import os.path
+from typing import List
 import uvicorn
-from fastapi import FastAPI, Request, status, Form, Depends
+from fastapi import FastAPI, Request, status, Form, Depends, UploadFile, File
 from authentication.oauth_token import create_token
 from authentication.password_hashing import Hash
 from database_config import db_models, db_creation
@@ -10,6 +12,7 @@ from starlette.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 
+from end_functions.db_functions import get_one_db_data, add_data_in_db
 from verifications.email_and_pass_verification import email_checker, password_checker
 
 app = FastAPI()
@@ -24,7 +27,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def logout(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        is_user = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        is_user = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if is_user:
             is_user.user_token = None
             is_user.user_status = False
@@ -58,7 +61,7 @@ async def register_api(request: Request, first_name: str = Form(...), last_name:
         return RedirectResponse(url=app.url_path_for("dashboard_api"))
 
     if email_checker(email):
-        user = db.query(db_models.User).filter(email == db_models.User.email).first()
+        user = await get_one_db_data(db, db_models.User, db_models.User.email, email)
         if user:
             message = 'User already exist'
             return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
@@ -87,7 +90,7 @@ async def register_api(request: Request, first_name: str = Form(...), last_name:
 async def login_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if not is_token:
-        is_admin = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        is_admin = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if not is_admin:
             current_time = datetime.datetime.now()
             new_admin = db_models.User(first_name="Admin", last_name="Admin", email="admin123@gmail.com",
@@ -109,7 +112,7 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
     if is_token:
         return RedirectResponse(url=app.url_path_for("dashboard_api"))
 
-    user = db.query(db_models.User).filter(email == db_models.User.email).first()
+    user = db.query(db_models.User).filter(db_models.User.email == email).first()
     if user:
         if email_checker(email):
             if Hash.verify(password, user.password):
@@ -118,7 +121,7 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
                     user.user_status = True
                     db.commit()
 
-                    updated_token = db.query(db_models.User).filter(email == db_models.User.email).first()
+                    updated_token = db.query(db_models.User).filter(db_models.User.email == email).first()
                     response = RedirectResponse(url=app.url_path_for("dashboard_api"))
                     response.set_cookie(key="token", value=updated_token.user_token)
 
@@ -132,9 +135,11 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
 async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
-            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist})
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist,
+                                                                       "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
 
@@ -143,9 +148,11 @@ async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_
 async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
-            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist})
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist,
+                                                                       "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
@@ -156,17 +163,21 @@ async def get_all_user(request: Request, db: Session = Depends(db_creation.get_d
     is_token = request.cookies.get('token')
     if is_token:
         user_exist = db.query(db_models.User).all()
-        return templates.TemplateResponse("pages/tables.html", {"request": request, 'user_data': user_exist})
+        category_data = db.query(db_models.Category).all()
+        return templates.TemplateResponse("pages/tables.html", {"request": request, 'user_data': user_exist,
+                                                                "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
 
 @app.get('/add_user/')
-async def add_user(request: Request):
+async def add_user(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
         message = ''
-        return templates.TemplateResponse("pages/add-user.html", {"request": request, "error": message})
+        category_data = db.query(db_models.Category).all()
+        return templates.TemplateResponse("pages/add-user.html", {"request": request, "error": message,
+                                                                  "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for("login_api"))
 
@@ -180,7 +191,7 @@ async def add_user(request: Request, first_name: str = Form(...), last_name: str
         return RedirectResponse(url=app.url_path_for("dashboard_api"))
 
     if email_checker(email):
-        user = db.query(db_models.User).filter(email == db_models.User.email).first()
+        user = db.query(db_models.User).filter(db_models.User.email == email).first()
         if user:
             message = 'User already exist'
             return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
@@ -190,6 +201,7 @@ async def add_user(request: Request, first_name: str = Form(...), last_name: str
                 return templates.TemplateResponse("pages/sign-up.html", {"request": request, "error": message})
             else:
                 message = 'User Created Successfully'
+                category_data = db.query(db_models.Category).all()
                 current_time = datetime.datetime.now()
                 new_user = db_models.User(first_name=first_name, last_name=last_name, email=email,
                                           password=Hash.bcrypt(password),
@@ -200,7 +212,8 @@ async def add_user(request: Request, first_name: str = Form(...), last_name: str
                 db.commit()
                 db.refresh(new_user)
 
-                return templates.TemplateResponse("pages/add-user.html", {"request": request, "success": message})
+                return templates.TemplateResponse("pages/add-user.html", {"request": request, "success": message,
+                                                                          "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('register_api'))
 
@@ -209,10 +222,12 @@ async def add_user(request: Request, first_name: str = Form(...), last_name: str
 async def update_user(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
 
         if user_exist:
-            return templates.TemplateResponse("pages/profile.html", {"request": request, "user_data": user_exist})
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/profile.html", {"request": request, "user_data": user_exist,
+                                                                     "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
@@ -223,7 +238,7 @@ async def update_user(request: Request, first_name: str = Form(None), last_name:
                       db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
 
         if user_exist:
             if password != confirm_password:
@@ -243,8 +258,9 @@ async def update_user(request: Request, first_name: str = Form(None), last_name:
 
             db.commit()
             message = "Profile updated successfully"
+            category_data = db.query(db_models.Category).all()
             return templates.TemplateResponse("pages/profile.html", {"request": request, "user_data": user_exist,
-                                                                     "success": message})
+                                                                     "success": message, "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
@@ -253,7 +269,7 @@ async def update_user(request: Request, first_name: str = Form(None), last_name:
 async def delete_user(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
 
         if user_exist:
             user_exist.delete(synchronize_session=False)
@@ -268,9 +284,11 @@ async def delete_user(request: Request, db: Session = Depends(db_creation.get_db
 async def billing_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
-            return templates.TemplateResponse("pages/billing.html", {"request": request, "user_data": user_exist})
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/billing.html", {"request": request, "user_data": user_exist,
+                                                                     "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
 
@@ -279,9 +297,11 @@ async def billing_api(request: Request, db: Session = Depends(db_creation.get_db
 async def billing_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
-            return templates.TemplateResponse("pages/billing.html", {"request": request, "user_data": user_exist})
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/billing.html", {"request": request, "user_data": user_exist,
+                                                                     "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
@@ -291,9 +311,11 @@ async def billing_api(request: Request, db: Session = Depends(db_creation.get_db
 async def notification_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
-            return templates.TemplateResponse("pages/notifications.html", {"request": request, "user_data": user_exist})
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/notifications.html", {"request": request, "user_data": user_exist,
+                                                                           "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
 
@@ -302,11 +324,131 @@ async def notification_api(request: Request, db: Session = Depends(db_creation.g
 async def notification_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(is_token == db_models.User.user_token).first()
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
-            return templates.TemplateResponse("pages/notifications.html", {"request": request, "user_data": user_exist})
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/notifications.html", {"request": request, "user_data": user_exist,
+                                                                           "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
+
+
+# ========category data=========
+@app.get('/category/', status_code=status.HTTP_200_OK)
+async def category_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/category.html", {"request": request, "user_data": user_exist,
+                                                                      "category_data": category_data})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post('/category/', status_code=status.HTTP_200_OK)
+async def category_api(request: Request, category_name: str = Form(None), db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            print(category_name)
+            db_data = db_models.Category(category_name=category_name, user_id=user_exist.id)
+            await add_data_in_db(db, db_data)
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/category.html", {"request": request, "user_data": user_exist,
+                                                                           "category_data": category_data})
+
+    return RedirectResponse(url=app.url_path_for('login_api'))
+
+
+# ========product data=========
+@app.get('/get_products/{category_name}/{data_id}/', status_code=status.HTTP_200_OK)
+async def get_products_api(request: Request, category_name: str, data_id: int, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/get_products.html", {"request": request, "user_data": user_exist,
+                                                                          "category_data": category_data,
+                                                                          "category_name": category_name})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post('/get_products/{category_name}/{data_id}/', status_code=status.HTTP_200_OK)
+async def get_products_api(request: Request, category_name: str, data_id: int, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/get_products.html", {"request": request, "user_data": user_exist,
+                                                                          "category_data": category_data,
+                                                                          "category_name": category_name})
+
+    return RedirectResponse(url=app.url_path_for('login_api'))
+
+
+@app.get('/add_product/', status_code=status.HTTP_200_OK)
+async def add_product(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            category_data = db.query(db_models.Category).all()
+            return templates.TemplateResponse("pages/add_product.html", {"request": request, "user_data": user_exist,
+                                                                         "category_data": category_data})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post('/add_product/', status_code=status.HTTP_200_OK)
+async def add_product(request: Request, product_code: str = Form(None), product_name: str = Form(None),
+                           select_category: int = Form(None), quantity: int = Form(None), sale_price: int = Form(None),
+                           purchase_price: int = Form(None), description: str = Form(None),
+                           images: List[UploadFile] = File(None), db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            category_data = db.query(db_models.Category).all()
+            if not os.path.exists("static/uploads"):
+                os.makedirs("static/uploads")
+
+            image_paths = []
+            print(images)
+            for img_file in images:
+                if img_file.filename != "":  # Check if the file is uploaded
+                    if img_file.content_type.startswith('image/'):  # Validate the file type
+                        file_location = f"static/uploads/{img_file.filename}"
+                        with open(file_location, "wb+") as file_object:
+                            file_object.write(img_file.file.read())
+                        image_paths.append(file_location)
+                    else:
+                        print(f"File {img_file.filename} is not an image")
+
+            product_image1 = image_paths[0] if len(image_paths) > 0 else None
+            product_image2 = image_paths[1] if len(image_paths) > 1 else None
+            product_image3 = image_paths[2] if len(image_paths) > 2 else None
+
+            db_data = db_models.Products(product_code=product_code, product_name=product_name, sale_price=sale_price,
+                                         product_description=description, product_image1=product_image1,
+                                         product_image2=product_image2, product_image3=product_image3,
+                                         product_quantity=quantity, purchase_price=purchase_price,
+                                         category_id=select_category, user_id=user_exist.id)
+
+            db.add(db_data)
+            db.commit()
+            db.refresh(db_data)
+
+            success = "Product added successfully!"
+            return templates.TemplateResponse("pages/add_product.html", {"request": request, "user_data": user_exist,
+                                                                      "category_data": category_data, "success": success})
+
+    return RedirectResponse(url=app.url_path_for('login_api'), status_code=status.HTTP_303_SEE_OTHER)
 
 
 if __name__ == '__main__':

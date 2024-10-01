@@ -64,6 +64,15 @@
         </li>
 
         <li class="nav-item">
+          <a class="nav-link text-white " href="/add_product/">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="material-icons opacity-10">category</i>
+              </div>
+            <span class="nav-link-text ms-1">Add Product</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
           <a class="nav-link text-white " href="/get_all_user/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">table_view</i>
@@ -570,26 +579,25 @@
             <div class="col-lg-6 mb-lg-0 mb-4">
               <div class="copyright text-center text-sm text-muted text-lg-start">
                 © <script>document.write(new Date().getFullYear())</script>, Create by
-                <a href="" class="font-weight-bold" target="_blank">CodeBase</a> for a better web.
+                <a href="/dashboard/" class="font-weight-bold">CodeBase</a> for a better web.
               </div>
             </div>
             <div class="col-lg-6">
               <ul class="nav nav-footer justify-content-center justify-content-lg-end">
                 <li class="nav-item">
-                  <a href="" class="nav-link text-muted" target="_blank">CodeBase</a>
+                  <a href="/dashboard/" class="nav-link text-muted">CodeBase</a>
                 </li>
                 <li class="nav-item">
-                  <a href="" class="nav-link text-muted" target="_blank">About Us</a>
+                  <a href="/dashboard/" class="nav-link text-muted">About Us</a>
                 </li>
                 <li class="nav-item">
-                  <a href="" class="nav-link pe-0 text-muted" target="_blank">License</a>
+                  <a href="/dashboard/" class="nav-link pe-0 text-muted">License</a>
                 </li>
               </ul>
             </div>
           </div>
         </div>
       </footer>
-
     </div>
   </main>
 
@@ -669,10 +677,9 @@
           var color = element.getAttribute("data-color");
           var sidebar = document.querySelector(".sidenav");
           if (sidebar) {
-            sidebar.classList.remove("bg-gradient-primary", "bg-gradient-dark", "bg-gradient-info", "bg-gradient-success", "bg-gradient-warning", "bg-gradient-danger");
-
+            sidebar.classList.remove("bg-gradient-primary", "bg-gradient-dark", "bg-gradient-info",
+                "bg-gradient-success", "bg-gradient-warning", "bg-gradient-danger");
             sidebar.classList.add("bg-gradient-" + color);
-
             var badges = document.querySelectorAll(".badge.filter");
             badges.forEach(function(badge) {
               badge.classList.remove("active");
