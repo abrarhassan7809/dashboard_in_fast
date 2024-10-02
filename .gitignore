@@ -5,3 +5,4 @@ __pycache__
 dashboard.db
 images
 static/uploads
+test_file.py

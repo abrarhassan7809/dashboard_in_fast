@@ -11,6 +11,7 @@ class User(Base):
     email = Column(String, unique=False, nullable=False)
     password = Column(String, unique=False, nullable=False)
     confirm_password = Column(String, unique=False, nullable=False)
+    img_path = Column(String, nullable=True)
     user_token = Column(String, nullable=True)
 
     created_at = Column(TIMESTAMP, nullable=False)
@@ -24,6 +25,7 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     category_name = Column(String, unique=False, nullable=False)
+    img_path = Column(String, unique=False, nullable=True)
 
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 

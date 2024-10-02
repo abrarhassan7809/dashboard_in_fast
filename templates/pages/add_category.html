@@ -39,7 +39,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white " href="/category/">
+          <a class="nav-link text-white active" href="/category/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">category</i>
               </div>
@@ -48,7 +48,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link text-white active" href="/products/">
+          <a class="nav-link text-white" href="/products/">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">category</i>
               </div>
@@ -255,43 +255,20 @@
             <span style="float: right; cursor: pointer; font-size: 20px;" aria-hidden="true" onclick="this.parentElement.style.display='none';">&times;</span>
           </div>
         {% endif %}
-        <form action="/add_product/" method="post" enctype="multipart/form-data">
+        <form action="/add_category/" method="post" enctype="multipart/form-data">
             <div class="row gx-4 mb-2">
                 <div class="col-lg-4 col-md-5 col-sm-12 my-auto">
                     <div id="image-preview-group" class="row flex-column"></div>
                     <div class="mt-4">
-                        <small class="text-muted" id="small_text">You can upload up to 3 images.</small>
-                        <input type="file" name="images" accept="image/*" multiple onchange="validateAndPreviewImages(this)" class="form-control" required>
+                        <small class="text-muted" id="small_text">You can upload up to 1 images.</small>
+                        <input type="file" name="image" accept=".jpg, .jpeg, .png" onchange="validateAndPreviewImages(this)" class="form-control" required>
                     </div>
                 </div>
                 <div class="col-lg-5 col-md-5 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
                     <div class="nav-wrapper position-relative end-0">
-                        <h4 class="mt-2" style="color: #e91e63;">Add Product</h4>
+                        <h4 class="mt-2" style="color: #e91e63;">Add Category</h4>
                         <div class="input-group input-group-outline mb-3">
-                            <input type="text" name="product_code" placeholder="Product Code" class="form-control" required>
-                        </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <input type="text" name="product_name" placeholder="Product Name" class="form-control" required>
-                        </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <select style="width: 100%" class="form-control" name="select_category" required>
-                                <option disabled selected>Select Category</option>
-                                {% for category in category_data %}
-                                <option value="{{ category.id }}">{{ category.category_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <input type="number" name="quantity" min="1" placeholder="Quantity" class="form-control" required>
-                        </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <input type="number" name="sale_price" placeholder="Sale Price" class="form-control" required>
-                        </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <input type="number" name="purchase_price" placeholder="Purchase Price" class="form-control" required>
-                        </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <textarea name="description" placeholder="Product Description" class="form-control" required></textarea>
+                            <input type="text" name="category_name" placeholder="Category Name" class="form-control" required>
                         </div>
                         <div class="text-center">
                             <button type="submit" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0">Add</button>
@@ -422,7 +399,7 @@
       errorAlerts.forEach(function (errorAlert) {
           setTimeout(function () {
               errorAlert.style.display = "none";
-          }, 2000);
+          }, 1000);
       });
 
       successAlerts.forEach(function (successAlert) {
@@ -435,37 +412,40 @@
   <script>
     let totalUploadedImages = 0;
     function validateAndPreviewImages(input) {
-        const maxFiles = 3;
+        const maxFiles = 1;
         const files = input.files;
         const previewContainer = document.getElementById('image-preview-group');
         const smallText = document.getElementById('small_text');
         previewContainer.innerHTML = '';
-        if (totalUploadedImages + files.length > maxFiles) {
-            alert('You can only upload a maximum of 3 images in total.');
+
+        if (files.length > maxFiles) {
+            alert('You can only upload a maximum of 1 image.');
             input.value = '';
             return;
         }
 
         Array.from(files).forEach((file) => {
-            if (file.type.startsWith('image/') && totalUploadedImages < maxFiles) {
+            if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imgCol = document.createElement('div');
                     imgCol.classList.add('mb-3');
+
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.style.width = '150px'; // Set image width
-                    img.style.height = '120px'; // Set image height
-                    img.style.objectFit = 'cover'; // Ensure the image fits the box
-                    img.classList.add('border-radius-lg', 'shadow-sm'); // Add styling
+                    img.style.width = '200px';  // Set desired image width
+                    img.style.height = '150px'; // Set desired image height
+                    img.style.objectFit = 'cover'; // Ensure the image fits the container
+                    img.classList.add('border-radius-lg', 'shadow-sm'); // Add custom styles
 
                     imgCol.appendChild(img);
                     previewContainer.appendChild(imgCol);
                 }
                 reader.readAsDataURL(file);
-                totalUploadedImages++;
+                totalUploadedImages = 1;
             }
         });
+
         if (totalUploadedImages > 0) {
             smallText.style.display = 'none';
         }

@@ -12,7 +12,7 @@ from starlette.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 
-from end_functions.db_functions import get_one_db_data, add_data_in_db
+from end_functions.db_functions import get_one_db_data, add_data_in_db, get_all_db_data_with, get_all_db_data
 from verifications.email_and_pass_verification import email_checker, password_checker
 
 app = FastAPI()
@@ -135,11 +135,15 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
 async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        user_exist = await get_one_db_data(db, db_models.User, db_models.User.user_token, is_token)
         if user_exist:
-            category_data = db.query(db_models.Category).all()
+            category_data = await get_all_db_data(db, db_models.Category)
+            product_data = await get_all_db_data(db, db_models.Products)
+            all_user_data = await get_all_db_data(db, db_models.User)
             return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist,
-                                                                       "category_data": category_data})
+                                                                       "category_data": category_data,
+                                                                       "product_data": product_data,
+                                                                       "all_user_data": all_user_data})
 
     return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
 
@@ -148,11 +152,15 @@ async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_
 async def dashboard_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
-        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        user_exist = await get_one_db_data(db, db_models.User, db_models.User.user_token, is_token)
         if user_exist:
-            category_data = db.query(db_models.Category).all()
+            category_data = await get_all_db_data(db, db_models.Category)
+            product_data = await get_all_db_data(db, db_models.Products)
+            all_user_data = await get_all_db_data(db, db_models.User)
             return templates.TemplateResponse("pages/dashboard.html", {"request": request, "user_data": user_exist,
-                                                                       "category_data": category_data})
+                                                                       "category_data": category_data,
+                                                                       "product_data": product_data,
+                                                                       "all_user_data": all_user_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
@@ -164,7 +172,7 @@ async def get_all_user(request: Request, db: Session = Depends(db_creation.get_d
     if is_token:
         user_exist = db.query(db_models.User).all()
         category_data = db.query(db_models.Category).all()
-        return templates.TemplateResponse("pages/tables.html", {"request": request, 'user_data': user_exist,
+        return templates.TemplateResponse("pages/users.html", {"request": request, 'user_data': user_exist,
                                                                 "category_data": category_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
@@ -347,23 +355,58 @@ async def category_api(request: Request, db: Session = Depends(db_creation.get_d
     return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
 
 
-@app.post('/category/', status_code=status.HTTP_200_OK)
-async def category_api(request: Request, category_name: str = Form(None), db: Session = Depends(db_creation.get_db)):
+@app.get('/add_category/', status_code=status.HTTP_200_OK)
+async def add_category_api(request: Request, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
     if is_token:
         user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
-            print(category_name)
-            db_data = db_models.Category(category_name=category_name, user_id=user_exist.id)
+            return templates.TemplateResponse("pages/add_category.html", {"request": request, "user_data": user_exist})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post('/add_category/', status_code=status.HTTP_200_OK)
+async def add_category_api(request: Request, category_name: str = Form(...), image: UploadFile = Form(...),
+                           db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            file_path = ""
+            if not os.path.exists("static/uploads"):
+                os.makedirs("static/uploads")
+
+            if image.filename != "":
+                file_path = f"static/uploads/{image.filename}"
+                with open(file_path, "wb") as buffer:
+                    buffer.write(await image.read())
+            else:
+                print(f"File {image.filename} is not an image")
+
+            db_data = db_models.Category(category_name=category_name, img_path=file_path, user_id=user_exist.id)
             await add_data_in_db(db, db_data)
-            category_data = db.query(db_models.Category).all()
-            return templates.TemplateResponse("pages/category.html", {"request": request, "user_data": user_exist,
-                                                                           "category_data": category_data})
+            success = "Category added successfully"
+            return templates.TemplateResponse("pages/add_category.html", {"request": request, "user_data": user_exist,
+                                                                          "success": success})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
 
 # ========product data=========
+@app.get('/products/', status_code=status.HTTP_200_OK)
+async def products_api(request: Request, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
+        if user_exist:
+            product_data = await get_all_db_data(db, db_models.Products)
+            return templates.TemplateResponse("pages/products.html", {"request": request, "user_data": user_exist,
+                                                                          "product_data": product_data})
+
+    return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
+
+
 @app.get('/get_products/{category_name}/{data_id}/', status_code=status.HTTP_200_OK)
 async def get_products_api(request: Request, category_name: str, data_id: int, db: Session = Depends(db_creation.get_db)):
     is_token = request.cookies.get('token')
@@ -371,9 +414,11 @@ async def get_products_api(request: Request, category_name: str, data_id: int, d
         user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
             category_data = db.query(db_models.Category).all()
+            product_data = await get_all_db_data_with(db, db_models.Products, db_models.Products.category_id, data_id)
             return templates.TemplateResponse("pages/get_products.html", {"request": request, "user_data": user_exist,
                                                                           "category_data": category_data,
-                                                                          "category_name": category_name})
+                                                                          "category_name": category_name,
+                                                                          "product_data": product_data})
 
     return RedirectResponse(url=app.url_path_for('logout'), status_code=status.HTTP_303_SEE_OTHER)
 
@@ -385,9 +430,11 @@ async def get_products_api(request: Request, category_name: str, data_id: int, d
         user_exist = db.query(db_models.User).filter(db_models.User.user_token == is_token).first()
         if user_exist:
             category_data = db.query(db_models.Category).all()
+            product_data = await get_all_db_data_with(db, db_models.Products, db_models.Products.category_id, data_id)
             return templates.TemplateResponse("pages/get_products.html", {"request": request, "user_data": user_exist,
                                                                           "category_data": category_data,
-                                                                          "category_name": category_name})
+                                                                          "category_name": category_name,
+                                                                          "product_data": product_data})
 
     return RedirectResponse(url=app.url_path_for('login_api'))
 
@@ -419,12 +466,11 @@ async def add_product(request: Request, product_code: str = Form(None), product_
                 os.makedirs("static/uploads")
 
             image_paths = []
-            print(images)
             for img_file in images:
-                if img_file.filename != "":  # Check if the file is uploaded
-                    if img_file.content_type.startswith('image/'):  # Validate the file type
+                if img_file.filename != "":
+                    if img_file.content_type.startswith('image/'):
                         file_location = f"static/uploads/{img_file.filename}"
-                        with open(file_location, "wb+") as file_object:
+                        with open(file_location, "wb") as file_object:
                             file_object.write(img_file.file.read())
                         image_paths.append(file_location)
                     else:
