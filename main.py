@@ -497,5 +497,31 @@ async def add_product(request: Request, product_code: str = Form(None), product_
     return RedirectResponse(url=app.url_path_for('login_api'), status_code=status.HTTP_303_SEE_OTHER)
 
 
+# ========delete data=========
+@app.get('/delete_data/{table_name}/{item_id}/', status_code=status.HTTP_200_OK)
+async def delete_data(request: Request, table_name: str, item_id: int, db: Session = Depends(db_creation.get_db)):
+    is_token = request.cookies.get('token')
+    if is_token:
+        user_exist = await get_one_db_data(db, db_models.User, db_models.User.user_token, is_token)
+        if user_exist:
+            data_exist = None
+            response = None
+            if table_name == 'product':
+                data_exist = db.query(db_models.Products).filter(db_models.Products.id == item_id)
+                response = RedirectResponse(url=app.url_path_for('products_api'))
+            if table_name == 'user':
+                data_exist = db.query(db_models.User).filter(db_models.User.id == item_id)
+                response =  RedirectResponse(url=app.url_path_for('get_all_user'))
+            if table_name == 'category':
+                data_exist = db.query(db_models.Category).filter(db_models.Category.id == item_id).first()
+                response = RedirectResponse(url=app.url_path_for('category_api'))
+
+            data_exist.delete(synchronize_session=False)
+            db.commit()
+            return response
+
+    return RedirectResponse(url=app.url_path_for('login_api'))
+
+
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True)
