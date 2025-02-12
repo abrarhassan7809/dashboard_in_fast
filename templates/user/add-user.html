@@ -8,9 +8,8 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
-
-    <link id="pagestyle" href="/static/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
+    <link id="pagestyle" href="/static/css/material-dashboard.css" rel="stylesheet" />
+    <script defer data-site="code_and_coffee.com" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
     <link rel="apple-touch-icon" sizes="76x76" href="/static/img/apple-icon.png">
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
     <link href="/static/css/nucleo-icons.css" rel="stylesheet" />
@@ -38,7 +37,7 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg blur border-radius-lg top-0 z-index-3 shadow position-absolute mt-4 py-2 start-0 end-0 mx-4">
           <div class="container-fluid ps-2 pe-0">
-            <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 " href="/dashboard/">Fast Dashboard</a>
+            <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 " href="/dashboard/">Code & Coffee</a>
             <button class="navbar-toggler shadow-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon mt-2">
                 <span class="navbar-toggler-bar bar1"></span>
@@ -117,10 +116,6 @@
   </main>
 
   <!--   Core JS Files   -->
-  <script src="/static/js/core/popper.min.js"></script>
-  <script src="/static/js/core/bootstrap.min.js"></script>
-  <script src="/static/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="/static/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var errorAlerts = document.querySelectorAll(".alert-danger");
@@ -138,15 +133,6 @@
           }, 2000);
       });
     });
-  </script>
-  <script>
-    var win = navigator.platform.indexOf('Win') > -1;
-    if (win && document.querySelector('#sidenav-scrollbar')) {
-      var options = {
-        damping: '0.5'
-      }
-      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-    }
   </script>
 </body>
 

@@ -2,6 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 passlib
+argon2-cffi
 pydantic
 python-jose
 python-jose[cryptography]
