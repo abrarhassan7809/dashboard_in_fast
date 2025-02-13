@@ -9,12 +9,14 @@ from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from end_functions.db_functions import get_one_db_data, add_data_in_db, get_all_db_data_with, get_all_db_data
 from verifications.email_and_pass_verification import email_checker
+from e_website_route.website_route import e_router
 import datetime
 import os.path
 from typing import List
 import uvicorn
 
 app = FastAPI()
+app.include_router(e_router)
 Base.metadata.create_all(engine)
 
 templates = Jinja2Templates(directory='templates')
@@ -711,6 +713,28 @@ async def notification_api(request: Request, db: Session = Depends(db_creation.g
         return templates.TemplateResponse("pages/notifications.html", {"request": request, "user_data": user_exist,
                                                                        "category_data": category_data,
                                                                        "active_page": "notification"})
+
+
+# ========daily sales data=========
+@app.get('/daily_sales/', status_code=status.HTTP_200_OK)
+async def daily_sales(request: Request, db: Session = Depends(db_creation.get_db)):
+    return 'daily sales'
+
+
+@app.post('/daily_sales/', status_code=status.HTTP_200_OK)
+async def daily_sales(request: Request, db: Session = Depends(db_creation.get_db)):
+    return 'daily sales'
+
+
+# ========completed tasks data=========
+@app.get('/completed_task/', status_code=status.HTTP_200_OK)
+async def completed_task(request: Request, db: Session = Depends(db_creation.get_db)):
+    return 'completed task'
+
+
+@app.post('/completed_task/', status_code=status.HTTP_200_OK)
+async def completed_task(request: Request, db: Session = Depends(db_creation.get_db)):
+    return 'completed task'
 
 
 if __name__ == '__main__':

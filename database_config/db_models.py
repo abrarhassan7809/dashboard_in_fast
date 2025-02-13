@@ -60,6 +60,7 @@ class Order(Base):
     created_at = Column(TIMESTAMP, nullable=False)
 
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    order_status_id = Column(Integer, ForeignKey('order_status.id', ondelete='CASCADE'), nullable=False)
 
 
 class OrderItem(Base):
@@ -74,3 +75,13 @@ class OrderItem(Base):
     total = Column(Float, nullable=False)
 
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+
+
+class OrderStatus(Base):
+    __tablename__ = 'order_status'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    order_paid = Column(String, unique=False, nullable=False)
+    order_status = Column(String, unique=False, nullable=False)
+
+    order_id = Column(Integer, ForeignKey('order.id', ondelete='CASCADE'), nullable=False)
