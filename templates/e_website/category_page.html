@@ -7,4 +7,32 @@
         </div>
     </div>
 
+    <section class="card_section my-4">
+        <div class="row mb-4">
+            {% if product_data %}
+                {% for product in product_data %}
+                    <div class="col-3 p-1">
+                        <div class="card">
+                            <img class="card-img-top" src="{% if product.product_image1 %} /{{ product.product_image1 }} {% else %} /static/img/products/product-1-min.jpg {% endif %}" alt="{{ product.product_name }}">
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    <h4 class="card-title">{{ product.product_name }}</h4>
+                                    <span class="ml-auto mt-1 card-title">${{ product.sale_price }}</span>
+                                </div>
+                                <span class="card-text">{{ product.product_description }}</span>
+                                <hr>
+                                <a class="btn btn-sm" href="/product_detail/{{ product.id }}/">Buy</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% if loop.index % 4 == 0 %}
+                        </div><div class="row mb-4">
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <span>No Product Founds.</span>
+            {% endif %}
+        </div>
+    </section>
+
 {% endblock %}
