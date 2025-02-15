@@ -11,16 +11,17 @@
         <div class="row mb-4">
             {% for product in product_data %}
                 <div class="col-3 p-1">
-                    <div class="card">
+                    <div class="card product_card">
                         <img class="card-img-top" src="{% if product.product_image1 %} /{{ product.product_image1 }} {% else %} /static/img/products/product-1-min.jpg {% endif %}" alt="{{ product.product_name }}">
+                        <a class="btn btn-sm add_cart_btn m-auto" href="/product_detail/{{ product.id }}/">Add to cart</a>
                         <div class="card-body">
-                            <div class="d-flex">
-                                <h4 class="card-title">{{ product.product_name }}</h4>
-                                <span class="ml-auto mt-1 card-title">${{ product.sale_price }}</span>
-                            </div>
+                            <h4 class="card-title">{{ product.product_name }}</h4>
                             <span class="card-text">{{ product.product_description }}</span>
                             <hr>
-                            <a class="btn btn-sm" href="/product_detail/{{ product.id }}/">Buy</a>
+                            <div class="row d-flex card_btn text-center pt-2 px-3">
+                                <span class="card_price">${{ product.sale_price }}</span>
+                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
+                            </div>
                         </div>
                     </div>
                 </div>

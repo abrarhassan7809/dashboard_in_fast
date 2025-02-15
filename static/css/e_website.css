@@ -113,11 +113,22 @@ body {
 .card_section .card {
     border-radius: 15px;
 }
+.card_section .product_card {
+    transition: transform 0.3s;
+}
+.card_section .product_card:hover {
+    transform: translateY(-10px);
+    transition: transform 0.3s;
+}
 .card_section .card .card-img-top {
-    height: 220px;
+    height: 250px;
+    padding: 10px;
 }
 .card_section .card .card-title {
     color: #3c585e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .card_section .card .card-text {
     display: block;
@@ -125,25 +136,68 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     color: gray;
+    margin-bottom: 30px;
 }
 .card_section hr {
     border: 1px solid #3c585e;
 }
-.card_section .card a {
-    background-color: #3c585e;
-    color: white;
-    width: 70px;
-    font-weight: bold;
-}
-.card_section .card a:hover {
+.card_section .card .add_cart_btn {
     background-color: #0dcaf0;
     color: #3c585e;
+    width: 100px;
+    font-weight: bold;
+    border-radius: 20px;
+    box-shadow: 2px 5px 8px rgba(0, 0, 0, 0.6);
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    margin-top: -25px !important;
+}
+.card_section .card .add_cart_btn:hover {
+    background-color: #3c585e;
+    color: #0dcaf0;
 }
 .card_section .card .card_price {
-    color: #3c585e !important;
-    display: flex;
+    color: #3c585e;
+    font-size: 17px;
+    font-weight: bold;
+}
+.card_section .card .fa-heart {
+    color: #3c585e;
+}
+.card_section .card .fa-heart:hover {
+    color: red;
 }
 
+
+/* ============ about stack holder content ============ */
+.stack_holder {
+    padding-bottom: 40px;
+}
+.stack_holder .carousel_card {
+    transition: transform 0.3s, background-color 0.3s, border 0.3s;
+    border-radius: 20px;
+}
+.stack_holder .carousel_card:hover {
+    transform: translateY(-5px) scale(1.1);
+    transition: transform 0.3s;
+    background-color: rgba(60, 88, 94, 0.10);
+    border: rgba(60, 88, 94, 0.10);
+}
+/*.stack_holder .carousel_card .card-img-top {*/
+/*    border-radius: 20%;*/
+/*    width: 150px;*/
+/*    height: 150px;*/
+/*    object-fit: cover;*/
+/*    display: block;*/
+/*    margin: 0 auto;*/
+/*}*/
+
+.stack_holder .carousel_card .card-title {
+    color: #3c585e;
+}
+.stack_holder .carousel_card .card-text {
+    margin-top: 100px;
+    color: #3c585e;
+}
 
 /* ============ footer content ============ */
 .footer {
@@ -164,6 +218,7 @@ body {
     text-align: right;
 }
 .footer .footer_icons a {
+    transition: transform 0.3s;
     color: white;
     padding: 0 15px;
     display: inline-block;
