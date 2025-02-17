@@ -13,7 +13,7 @@
                 <div class="col-3 p-1">
                     <div class="card product_card">
                         <img class="card-img-top" src="{% if product.product_image1 %} /{{ product.product_image1 }} {% else %} /static/img/products/product-1-min.jpg {% endif %}" alt="{{ product.product_name }}">
-                        <a class="btn btn-sm add_cart_btn m-auto" href="/product_detail/{{ product.id }}/">Add to cart</a>
+                        <a class="btn btn-sm show_detail_btn m-auto" href="/e_website/product_detail/{{ product.id }}/">Show More</a>
                         <div class="card-body">
                             <h4 class="card-title">{{ product.product_name }}</h4>
                             <span class="card-text">{{ product.product_description }}</span>

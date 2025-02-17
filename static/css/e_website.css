@@ -15,6 +15,19 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #09b7ca;
 }
+.back_word_btn {
+    background-color: #3c585e;
+    color: white;
+    padding: 7px;
+    border-radius: 20px;
+}
+.back_word_btn:hover {
+    background-color: #09b7ca;
+    color: #3c585e;
+    padding: 7px;
+    border-radius: 20px;
+}
+
 
 /* ============ navbar layout ============ */
 .navbar {
@@ -25,6 +38,8 @@ body {
     color: #09b7ca;
     margin-left: 20px;
     margin-right: 40px;
+    font-weight: bold;
+    font-size: 30px;
 }
 .navbar .navbar-nav .active {
     background-color: #09b7ca;
@@ -141,7 +156,7 @@ body {
 .card_section hr {
     border: 1px solid #3c585e;
 }
-.card_section .card .add_cart_btn {
+.card_section .card .show_detail_btn {
     background-color: #0dcaf0;
     color: #3c585e;
     width: 100px;
@@ -151,7 +166,7 @@ body {
     transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
     margin-top: -25px !important;
 }
-.card_section .card .add_cart_btn:hover {
+.card_section .card .show_detail_btn:hover {
     background-color: #3c585e;
     color: #0dcaf0;
 }
@@ -165,6 +180,63 @@ body {
 }
 .card_section .card .fa-heart:hover {
     color: red;
+}
+
+
+/* ============ show product content ============ */
+.product_detail_card {
+    border-radius: 10px;
+}
+.product_detail_card .product_img {
+    background-color: white;
+    border-radius: 10px 0 0 10px;
+}
+.product_detail_card .product_img .carousel-item img {
+    height: 350px;
+}
+.product_detail_card .product_data {
+    background-color: rgba(60, 88, 94, 0.20);
+    border-radius: 0 10px 10px 0;
+    border-left: 3px solid #3c585e;
+}
+.product_detail_card .product_description_box {
+    height: 220px;
+}
+.product_detail_card .product_price_box {
+    height: 50px;
+}
+.product_detail_card .detail_group_btn {
+    height: 50px;
+}
+.product_detail_card .detail_group_btn .product_buy_btn {
+    color: #0dcaf0;
+    background-color: #3c585e;
+    font-weight: bold;
+    width: 60px;
+    border-radius: 20px;
+    transition: transform 0.3s;
+}
+.product_detail_card .detail_group_btn .product_buy_btn:hover {
+    color: #3c585e;
+    background-color: #0dcaf0;
+    transition: transform 0.3s;
+}
+.product_detail_card .detail_group_btn .add_cart_btn {
+    color: #0dcaf0;
+    background-color: #3c585e;
+    font-weight: bold;
+    width: 110px;
+    border-radius: 20px;
+    transition: transform 0.3s;
+}
+.product_detail_card .detail_group_btn .add_cart_btn:hover {
+    color: #3c585e;
+    background-color: #0dcaf0;
+    transition: transform 0.3s;
+}
+.product_review_section {
+    height: 400px;
+    background-color: rgba(60, 88, 94, 0.20);
 }
 
 

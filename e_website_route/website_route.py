@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from starlette.staticfiles import StaticFiles
 from database_config import db_creation, db_models
-from end_functions.db_functions import get_all_db_data, get_all_db_data_with
+from end_functions.db_functions import get_all_db_data, get_all_db_data_with, get_one_db_data
 
 e_router = APIRouter(prefix="/e_website", tags=["e_website"])
 
@@ -41,3 +41,14 @@ async def selected_category(request: Request, category_id: int, db: Session = De
                                                                                "category_data": category_data,
                                                                                "product_data": product_data,
                                                                                "active_page": "category"})
+
+
+@e_router.get('/product_detail/{product_id}/')
+async def product_detail(request: Request, product_id: int, db: Session = Depends(db_creation.get_db)):
+    category_data = await get_all_db_data(db, db_models.Category)
+    product_data = await get_one_db_data(db, db_models.Products, db_models.Products.id, product_id)
+
+    return templates.TemplateResponse("e_website/product_detail.html", context={"request": request,
+                                                                               "category_data": category_data,
+                                                                               "product_data": product_data,
+                                                                               "active_page": "home"})
